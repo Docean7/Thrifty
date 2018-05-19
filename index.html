@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thrifty</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="css/fontawesome-all.css" rel="stylesheet">
+    <link rel="icon" href="favicon.png">
+</head>
+<body>
+
+
+<nav class="light-blue lighten-1" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-c
+ntainer" href="#" class="brand-logo">Thrifty</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a class="waves-effect waves-light btn right" onclick="showInfo()">How to use</a></li>
+            <li><a class="waves-effect waves-light btn right" onclick="checkBalance()">Check your balance</a></li>
+        </ul>
+
+    </div>
+</nav>
+
+<div id='howto' style="display: none">
+    <p>Thrifty is a Dapp to help people control their and their's children expenses. If you or someone you care about is lavish with money, you could use Thrifty to prevent unexpected expenses.
+        When you are making your first deposit to our contract you should select amount of time in days and amount of NAS you want to be your regular payout. Then select total amount of NAS you
+        want to transfer. You shouldn't select side address, if you want open  and after transaction is done - you got yourself new account
+    </p>
+
+</div>
+
+<div class="container">
+
+    <h2>Deposit money</h2>
+    <input type="number" id="part" placeholder="Select your regular part of NAS">
+    <input type="number" id="days" placeholder="Select number of days">
+    <input type="number" id="d_value" placeholder="Amount of NAS">
+    <p>ONLY FILL FIELD BELOW IF YOU WANT TO OPEN ACCOUNT FOR ANOTHER ADDRESS</p>
+    <input type="text" id="address" placeholder="Input SIDE address">
+
+    <button class="btn waves-effect waves-light" type="button" onclick="deposit()">Deposit
+        <i class="material-icons right">send</i>
+    </button>
+
+    <br>
+    <h2>Withdraw money</h2>
+    <br>
+    <button class="btn waves-effect waves-light" type="button" onclick="withdraw()" >Withdraw to yourself
+        <i class="material-icons right">send</i>
+    </button>
+    <br>
+    <br>
+    <p>ONLY FILL FIELD BELOW IF YOU WANT TO WITHDRAW NAS TO ANOTHER ADDRESS</p>
+
+    <input type="text" id="w_address" placeholder="Input NAS address">
+    <button class="btn waves-effect waves-light" type="button" onclick="withdraw()" >Withdraw
+        <i class="material-icons right">send</i>
+    </button>
+
+    <br>
+    <h2>Simple payment</h2>
+    <input type="number" id="payment" placeholder="Amount of NAS">
+    <br>
+    <p>ONLY FILL FIELD BELOW IF YOU WANT TO SEND NAS TO ANOTHER ADDRESS' ACCOUNT</p>
+    <input type="text" id="s_address" placeholder="Input NAS address">
+
+    <button class="btn waves-effect waves-light" type="button" onclick="accept()" >Transfer
+        <i class="material-icons right">send</i>
+    </button>
+
+    <br>
+    <h2>Change Conditions</h2>
+    <input type="number" id="new_part" placeholder="Select part of NAS">
+    <input type="number" id="new_days" placeholder="Select number of days">
+    <br>
+    <p>ONLY FILL FIELD BELOW IF YOU WANT TO CHANGE ANOTHER ACCOUNT'S CONDITIONS</p>
+    <input type="text" id="c_address" placeholder="Input NAS address">
+
+    <button class="btn waves-effect waves-light" type="button" onclick="changeCondition()" >Change conditions
+        <i class="material-icons right">send</i>
+    </button>
+    <br>
+    <br>
+</div>
+
+<footer class="page-footer orange accent-3">
+    <div class="container">
+        <div class="row">
+            <div class="col s6">
+                <h5 class="white-text">About me</h5>
+                <p class="grey-text text-lighten-4" style="font-size: 20px;">I am a computer science student from Ukraine, with a big passion for
+                    blockchain and for Nebulas especially. I hope you'll find my Dapp useful.</p>
+            </div>
+
+            <div class="col s3 offset-s3">
+                <h5 class="white-text">Github</h5>
+                <ul>
+                    <li><a href="https://github.com/Docean7/Thrifty"><i class="fab fa-github fa-4x"></i></a></li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+<!--  Scripts-->
+<script src="jquery-3.3.1.js"></script>
+<script src="nebpay.js"></script>
+</body>
+</html>
+
+<script>
+
+    function showInfo() {
+        $('#howto').toggle();
+    }
+
+    var contract_address = "n1zx8woBp8FeAZgnxp2TL4DwGnyvrbP8utc";
+    $(document).ready(function () {
+        var NebPay = require("nebpay");
+        var nebPay = new NebPay();
+        // var serialNumber; //transaction serial number
+        // var intervalQuery; //periodically query tx results
+
+        if (typeof(webExtensionWallet) === "undefined") {
+            alert("Extension wallet is not installed, please install it first.")
+        }
+    });
+
+
+    function deposit() {
+        var func = "deposit";
+        var part = $('#part').val();
+        var days = $('#days').val();
+        var address = $('#address').val();
+        var value = $('#d_value').val();
+        var args;
+        if (address) {
+            args = "[\"" + part + "\", " + "\"" + days + "\", " + "\"" + address + "\"]";
+        } else {
+            args = "[\"" + part + "\", " + "\"" + days + "\"]";
+        }
+
+        window.postMessage({
+            "target": "contentscript",
+            "data": {
+                "to": contract_address,
+                "value": value,
+                "contract": {
+                    "function": func,
+                    "args": args
+                }
+            },
+            "method": "neb_sendTransaction"
+        }, "*");
+
+    }
+
+    function withdraw() {
+        var func = "withdraw";
+        var address = $('#w_address').val();
+        var args;
+        if (address) {
+            args = "[\"" + address + "\"]";
+        } else {
+            args = "";
+        }
+        window.postMessage({
+            "target": "contentscript",
+            "data": {
+                "to": contract_address,
+                "value": "0",
+                "contract": {
+                    "function": func,
+                    "args": args
+                }
+            },
+            "method": "neb_sendTransaction"
+        }, "*");
+    }
+
+    function accept() {
+        var func = "accept";
+        var address = $('#s_address').val();
+        var args;
+        if (address) {
+            args = "[\"" + address + "\"]";
+        } else {
+            args = "";
+        }
+        var value = $('#payment').val();
+        window.postMessage({
+            "target": "contentscript",
+            "data": {
+                "to": contract_address,
+                "value": value,
+                "contract": {
+                    "function": func,
+                    "args": args
+                }
+            },
+            "method": "neb_sendTransaction"
+        }, "*");
+    }
+
+    function changeCondition() {
+        var func = "changeCondition";
+        var part = $('#new_part').val();
+        var days = $('#new_days').val();
+        var address = $('#c_address').val();
+        var args;
+        if (address) {
+            args = "[\"" + part + "\", " + "\"" + days + "\", " + "\"" + address + "\"]";
+        } else {
+            args = "[\"" + part + "\", " + "\"" + days + "\"]";
+        }
+        window.postMessage({
+            "target": "contentscript",
+            "data": {
+                "to": contract_address,
+                "value": "0",
+                "contract": {
+                    "function": func,
+                    "args": args
+                }
+            },
+            "method": "neb_sendTransaction"
+        }, "*");
+    }
+
+    function checkBalance() {
+        var func = "checkBalance";
+        var args = "";
+        window.postMessage({
+            "target": "contentscript",
+            "data": {
+                "to": contract_address,
+                "value": "0",
+                "contract": {
+                    "function": func,
+                    "args": args
+                }
+            },
+            "method": "neb_call"
+        }, "*");
+    }
+
+    window.addEventListener('message', function (e) {
+        var data = e.data.data;
+        if (data.neb_call){
+            var result = data.neb_call.result;
+            alert(JSON.parse(result) + " NAS");
+        }
+
+    })
+
+</script>
